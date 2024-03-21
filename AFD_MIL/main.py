@@ -2,7 +2,7 @@ import os
 import torch
 from torch import nn
 from Models import model_fn
-from Trainers import trainers_fn, heatmap_mixbamil_camlyon16
+from Trainers import trainers_fn
 from utils.cfgs_loader import load_yaml
 from utils.metrics import compute_score_2class, compute_score
 from utils.dataset import MILdataset
@@ -43,27 +43,9 @@ def main():
     test_dset = MILdataset(cfgs, 'test')
     test_loader = torch.utils.data.DataLoader(test_dset, batch_size=1, shuffle=False)
  
-    trainer = trainers_fn[cfgs["task"]](model, criterion, compute_score, optimizer, train_loader, test_loader, bag_loader, cfgs)
+    trainer = trainers_fn[cfgs["task"]](model, criterion, compute_score_2class, optimizer, train_loader, test_loader, bag_loader, cfgs)
     trainer.train()
 
 
-def draw_heatmap():
-    model = model_fn[cfgs['task']](cfgs)
-    criterion = CRITERION[cfgs['loss']]()
-    optimizer = torch.optim.Adam(model.parameters(), lr=cfgs["lr"], weight_decay=cfgs['weight_decay'])
-    #optimizer = torch.optim.SGD(model.parameters(), lr = 0.1, momentum = 0.9, weight_decay = 1e-4, nesterov=True)
-    # load data
-    #train_dset = MILdataset(cfgs, 'train')
-    #train_loader = torch.utils.data.DataLoader(train_dset, batch_size=cfgs["batch_size"], shuffle=False)
-    # this loader used for pseudo-label generation, due to the low speed of generation via instance loader with big batch size
-    #bag_dset = MILdataset(cfgs, 'train')
-    #bag_loader = torch.utils.data.DataLoader(bag_dset, batch_size=1, shuffle=False)
-    test_dset = MILdataset(cfgs, 'test')
-    test_loader = torch.utils.data.DataLoader(test_dset, batch_size=1, shuffle=False)
-
-    map = heatmap_mixbamil_camlyon16.MixABMIL_Test(model, criterion, compute_score_2class, optimizer, 0, test_loader, 0, cfgs)
-    map.heatmap()
-
 if __name__ == '__main__':
-    #draw_heatmap()
     main()
