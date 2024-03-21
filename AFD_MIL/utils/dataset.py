@@ -74,48 +74,9 @@ class MILdataset(data.Dataset):
             self.data_info = self.selected_instance_info
         else:
             raise ValueError("wrong mode")
-    '''
-    def top_k_select(self, pred, is_in_bag=False, inference=False):
-        count = 0
-        _count = 0
-        return_result = [[] for j in range(len(self.bag_info))]
-        # shuffle data
-        # instance
-        index_selected_instance = np.arange(0, len(self.bag_info)*self.k)
-        np.random.shuffle(index_selected_instance)
-        # bag
-        index_selected_bag = np.arange(0, len(self.bag_info))
-        np.random.shuffle(index_selected_bag)
-        # selection
-        for index in range(len(self.bag_info)):
-            slide_id = self.bag_info[index]["slide_id"]
-            target = self.bag_info[index]["label"]
-            num_instance = self.bag_info[index]["num_instance"]
-            if inference:
-                _pred_ = F.sigmoid(pred[count: count+num_instance]).mean(dim=-2)
-                _pred = pred[count: count+num_instance, _pred_.argmax(dim=-1)]
-                #_pred = pred[count: count+num_instance, 1]
-            else:
-                _pred = pred[count: count+num_instance, target]
-            _index = np.argsort(_pred).tolist()  # min, ..., max
-            return_result[index].append(slide_id)
-            return_result[index].append(target)
-            return_result[index].append(_index[-self.k:])
-            if is_in_bag:
-                # k = self.k if self.k < _index.shape[0] else _index.shape[0]
-                k = self.k
-                self.selected_bag_info[index_selected_bag[_count]] = {"slide_id": slide_id, "label": target, "instance_index": _index[-k:]}
-                _count += 1
-            else:
-                for ii in range(self.k):
-                    self.selected_instance_info[index_selected_instance[_count]] = {"slide_id": slide_id, "label": target, "instance_index": _index[-ii]}
-                    _count += 1
-            count += num_instance
-        return return_result
-    '''
     
-    '''
-    def top_k_select(self, pred, is_in_bag=False):#mixabmil
+
+    def top_k_select(self, pred, is_in_bag=False):
         count = 0
         _count = 0
         return_result = [[] for j in range(len(self.bag_info))]
@@ -150,76 +111,7 @@ class MILdataset(data.Dataset):
                     _count += 1
             count += num_instance
         return return_result
-    '''
-    '''
-    def top_k_select(self, pred, is_in_bag=False, inference=False):#irlabmil
-        count = 0
-        _count = 0
-        return_result = [[] for j in range(len(self.bag_info))]
-        # shuffle data
-        # instance
-        index_selected_instance = np.arange(0, len(self.bag_info)*self.k)
-        np.random.shuffle(index_selected_instance)
-        # bag
-        index_selected_bag = np.arange(0, len(self.bag_info))
-        np.random.shuffle(index_selected_bag)
-        k = self.k
-        # selection
-        for index in range(len(self.bag_info)):
-            slide_id = self.bag_info[index]["slide_id"]
-            target = self.bag_info[index]["label"]
-            num_instance = self.bag_info[index]["num_instance"]
-            _index0 = np.argsort(pred[count: count+num_instance, 0]).tolist()
-            _index1 = np.argsort(pred[count: count+num_instance, 1]).tolist()
-            _index2 = np.argsort(pred[count: count+num_instance, 2]).tolist()
-            _index3 = np.argsort(pred[count: count+num_instance, 3]).tolist()
-            _index4 = np.argsort(pred[count: count+num_instance, 4]).tolist()
-            return_result[index].append(slide_id)
-            return_result[index].append(target)
-            return_result[index].append(_index0[-k:] + _index1[-k:] + _index2[-k:] + _index3[-k:] + _index4[-k:])
-            if is_in_bag:
-                # k = self.k if self.k < _index.shape[0] else _index.shape[0]
-                self.selected_bag_info[index_selected_bag[_count]] = {"slide_id": slide_id, "label": target, "instance_index": _index0[-k:] + _index1[-k:] + _index2[-k:] + _index3[-k:] + _index4[-k:]}
-                _count += 1
-            else:
-                for ii in range(k):
-                    self.selected_instance_info[index_selected_instance[_count]] = {"slide_id": slide_id, "label": target, "instance_index": _index0[-ii:] + _index1[-ii:] + _index2[-ii:]}# + _index3[-ii:] + _index4[-ii:]}
-                    _count += 1
-            count += num_instance
-        return return_result
-    
-    '''
-    def top_k_select(self, pred, is_in_bag=False, inference=False):#maxpooling
-        count = 0
-        _count = 0
-        return_result = [[] for j in range(len(self.bag_info))]
-        # shuffle data
-        # instance
-        index_selected_instance = np.arange(0, len(self.bag_info)*self.k)
-        np.random.shuffle(index_selected_instance)
-        # bag
-        index_selected_bag = np.arange(0, len(self.bag_info))
-        np.random.shuffle(index_selected_bag)
-        k = self.k
-        # selection
-        for index in range(len(self.bag_info)):
-            slide_id = self.bag_info[index]["slide_id"]
-            target = self.bag_info[index]["label"]
-            num_instance = self.bag_info[index]["num_instance"]
-            _index0 = np.argsort(pred[count: count+num_instance, target])
-            return_result[index].append(slide_id)
-            return_result[index].append(target)
-            return_result[index].append(_index0[-k:])
-            if is_in_bag:
-                # k = self.k if self.k < _index.shape[0] else _index.shape[0]
-                self.selected_bag_info[index_selected_bag[_count]] = {"slide_id": slide_id, "label": target, "instance_index": _index0[-k:]}
-                _count += 1
-            else:
-                for ii in range(k):
-                    self.selected_instance_info[index_selected_instance[_count]] = {"slide_id": slide_id, "label": target, "instance_index": _index0[-ii]}# + _index3[-ii:] + _index4[-ii:]}
-                    _count += 1
-            count += num_instance
-        return return_result
+
     
     def __getitem__(self, index):
         slide_id = self.data_info[index]["slide_id"]
